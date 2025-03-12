@@ -1,93 +1,116 @@
+import java.io.*;
 import java.util.*;
 
 public class JobAssignment {
     private static final int INF = Integer.MAX_VALUE;
     
-    public static void main(String[] args) {
-        int[][] matrix = {
-            {4, 9, 5, 1, 4, 9},
-            {3, 1, 3, 7, 8, 6},
-            {5, 7, 3, 4, 1, 9},
-            {8, 8, 3, 7, 6, 6},
-            {5, 4, 3, 8, 9, 7},
-            {6, 3, 1, 4, 2, 5}
-        };
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new FileReader("assignmenta.txt"));
+        int n = Integer.parseInt(br.readLine().trim());
+        int[][] cost = new int[n][n];
+
+        for (int i = 0; i < n; i++) {
+            String[] line = br.readLine().trim().split(" ");
+            for (int j = 0; j < n; j++) {
+                cost[i][j] = Integer.parseInt(line[j]);
+            }
+        }
+        br.close();
         
-        int N = matrix.length;
-        int[][] costMatrix = new int[N][N];
+        int[] workerAssignment = hungarianAlgorithm(cost, n);
+        int totalCost = 0;
         
-        int maxValue = Arrays.stream(matrix).flatMapToInt(Arrays::stream).max().orElse(0);
+        System.out.println("Worker Assignments:");
+        for (int worker = 0; worker < n; worker++) {
+            System.out.println("Worker " + (worker + 1) + " -> Job " + (workerAssignment[worker] + 1));
+            totalCost += cost[worker][workerAssignment[worker]];
+        }
+        System.out.println("Total Cost: " + totalCost);
+    }
+
+    public static int[] hungarianAlgorithm(int[][] cost, int n) {
+        int[] lx = new int[n];
+        int[] ly = new int[n];
+        int[] match = new int[n];
+        Arrays.fill(match, -1);
+        boolean[] committedWorkers = new boolean[n];
         
-        // Chuyển thành bài toán tối thiểu hóa
-        for (int i = 0; i < N; i++) {
-            for (int j = 0; j < N; j++) {
-                costMatrix[i][j] = maxValue - matrix[i][j];
+        for (int i = 0; i < n; i++) {
+            lx[i] = Arrays.stream(cost[i]).max().orElse(-INF);
+        }
+        
+        for (int i = 0; i < n; i++) {
+            boolean[] S = new boolean[n];
+            boolean[] T = new boolean[n];
+            int[] slack = new int[n];
+            int[] slackWorker = new int[n];
+            Arrays.fill(slack, INF);
+            int[] parent = new int[n];
+            Arrays.fill(parent, -1);
+            
+            int x = i;
+            int y = -1;
+            int[] minSlackWorker = new int[n];
+            Arrays.fill(minSlackWorker, -1);
+            
+            while (true) {
+                S[x] = true;
+                int delta = INF;
+                int nextY = -1;
+                
+                for (int j = 0; j < n; j++) {
+                    if (!T[j]) {
+                        int gap = lx[x] + ly[j] - cost[x][j];
+                        if (gap < slack[j]) {
+                            slack[j] = gap;
+                            minSlackWorker[j] = x;
+                        }
+                        if (slack[j] < delta) {
+                            delta = slack[j];
+                            nextY = j;
+                        }
+                    }
+                }
+                
+                for (int k = 0; k < n; k++) {
+                    if (S[k]) lx[k] -= delta;
+                    if (T[k]) ly[k] += delta;
+                    else slack[k] -= delta;
+                }
+                
+                y = nextY;
+                T[y] = true;
+                x = match[y];
+                if (x == -1) break;
+            }
+            
+            while (y != -1) {
+                int prevY = match[y];
+                match[y] = minSlackWorker[y];
+                y = prevY;
             }
         }
         
-        int[] assignment = hungarianAlgorithm(costMatrix);
-        
-        System.out.println("Thợ\tCông việc");
-        int total = 0;
-        for (int i = 0; i < N; i++) {
-            System.out.println((i + 1) + "\t" + (assignment[i] + 1));
-            total += matrix[i][assignment[i]];
+        int[] workerAssignment = new int[n];
+        for (int j = 0; j < n; j++) {
+            if (match[j] != -1) {
+                workerAssignment[match[j]] = j;
+                committedWorkers[match[j]] = true;
+            }
         }
-        System.out.println("Tổng hiệu quả: " + total);
-    }
-    
-    public static int[] hungarianAlgorithm(int[][] cost) {
-        int n = cost.length;
-        int[] u = new int[n];
-        int[] v = new int[n];
-        int[] p = new int[n];
-        int[] way = new int[n];
         
-        for (int i = 1; i < n; i++) {
-            int[] minv = new int[n];
-            Arrays.fill(minv, INF);
-            boolean[] used = new boolean[n];
-            int j0 = 0;
-            p[0] = i;
-            
-            do {
-                used[j0] = true;
-                int i0 = p[j0], delta = INF, j1 = -1;
-                for (int j = 1; j < n; j++) {
-                    if (!used[j]) {
-                        int cur = cost[i0][j] - u[i0] - v[j];
-                        if (cur < minv[j]) {
-                            minv[j] = cur;
-                            way[j] = j0;
-                        }
-                        if (minv[j] < delta) {
-                            delta = minv[j];
-                            j1 = j;
-                        }
-                    }
-                }
+        for (int i = 0; i < n; i++) {
+            if (!committedWorkers[i]) {
                 for (int j = 0; j < n; j++) {
-                    if (used[j]) {
-                        u[p[j]] += delta;
-                        v[j] -= delta;
-                    } else {
-                        minv[j] -= delta;
+                    if (match[j] == -1) {
+                        workerAssignment[i] = j;
+                        match[j] = i;
+                        break;
                     }
                 }
-                j0 = j1;
-            } while (p[j0] != 0);
-            
-            do {
-                int j1 = way[j0];
-                p[j0] = p[j1];
-                j0 = j1;
-            } while (j0 > 0);
+            }
         }
         
-        int[] result = new int[n];
-        for (int j = 1; j < n; j++) {
-            result[p[j]] = j;
-        }
-        return result;
+        return workerAssignment;
     }
 }
