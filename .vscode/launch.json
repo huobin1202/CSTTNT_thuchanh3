@@ -1,0 +1,45 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "JohnsonScheduling",
+      "request": "launch",
+      "mainClass": "JohnsonScheduling",
+      "projectName": "CSTTNT_thuchanh3_1e398179"
+    },
+    {
+      "type": "java",
+      "name": "GreedyJobScheduling",
+      "request": "launch",
+      "mainClass": "GreedyJobScheduling",
+      "projectName": "CSTTNT_thuchanh3_1e398179"
+    },
+    {
+      "type": "java",
+      "name": "JobAssignment",
+      "request": "launch",
+      "mainClass": "JobAssignment",
+      "projectName": "CSTTNT_thuchanh3_1e398179"
+    },
+    {
+      "name": "C/C++ Runner: Debug Session",
+      "type": "cppdbg",
+      "request": "launch",
+      "args": [],
+      "stopAtEntry": false,
+      "externalConsole": true,
+      "cwd": "c:/Users/anvab/CSTTNT_thuchanh3",
+      "program": "c:/Users/anvab/CSTTNT_thuchanh3/build/Debug/outDebug",
+      "MIMode": "gdb",
+      "miDebuggerPath": "gdb",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
+}
