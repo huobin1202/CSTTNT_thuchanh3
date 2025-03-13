@@ -3,6 +3,13 @@
   "configurations": [
     {
       "type": "java",
+      "name": "GreedyAssignment",
+      "request": "launch",
+      "mainClass": "GreedyAssignment",
+      "projectName": "CSTTNT_thuchanh3_1e398179"
+    },
+    {
+      "type": "java",
       "name": "JohnsonScheduling",
       "request": "launch",
       "mainClass": "JohnsonScheduling",
